@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: bgdapp
+  labels:
+    app: bgdapp
+spec:
+  strategy:
+    canary:
+      steps:
+      - setWeight: 20
+      - pause:
+          duration: "1m"
+      - setWeight: 50
+      - pause:
+          duration: "2m"
+      canaryService: bgd-canary
+      stableService: bgd
+      trafficRouting:
+        istio:
+          virtualService:
+            name: bgd
+            routes:
+            - primary
+  replicas: 5
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: bgdapp
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: bgdapp
+        version: v1
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+      - image: quay.io/rhdevelopers/bgd:1.0.0
+        name: bgd
+        env:
+        - name: COLOR
+          value: "blue"
+        resources: {}

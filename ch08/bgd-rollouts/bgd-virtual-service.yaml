@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: bgd
+spec:
+  hosts:
+  - bgd
+  http:
+  - route:
+    - destination:
+        host: bgd
+      weight: 100
+    - destination:
+        host: bgd-canary
+      weight: 0
+    name: primary
